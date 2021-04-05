@@ -1,0 +1,68 @@
+.navbar-default {
+ background: #30bc22;
+ background: -webkit-gradient(linear, left top, right top, from(#319d26), color-stop(26%, #30bc22), color-stop(73%, #3ebc30), to(#44c736));
+    background: linear-gradient(to right, #319d26 0, #30bc22 26%, #3ebc30 73%, #44c736 100%) !important;
+}
+
+#content {
+ padding-bottom: 47vh;
+ width: 100%;
+}
+
+#wrapper {
+ margin: 0px;
+}
+
+.navbar {
+ margin-bottom: 0px;
+}
+
+.navbar {
+ z-index: 2;
+}
+
+body .dropdown-menu:not(.colorpicker) {
+ z-index: 9999!important;
+}
+
+
+::-webkit-scrollbar {
+    width: 10px!important;
+}
+
+/* Track */
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3)!important;
+    -webkit-border-radius: 10px!important;
+    border-radius: 10px!important;
+}
+
+/* Handle */
+
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px!important;
+    border-radius: 10px!important;
+    background: #eee!important;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5)!important;
+    min-height: 30px!important;
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+    background: rgba(0, 0, 0, 0.7)!important;
+}
+
+
+.btn-info {
+    height: 40px;
+    color: #fff;
+    background-color: #30bc22;
+    border: 0;
+}
+
+.btn-info:hover {
+    height: 40px;
+    color: #fff;
+    background-color: #319d26;
+    border: 0;
+}
