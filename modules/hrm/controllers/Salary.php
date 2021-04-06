@@ -59,14 +59,17 @@ class Salary extends AdminController
                 $data['total_salary'] = $data['total_salary'] + $bonus;
                 $data['basic_salary'] = $basicSalary;
 
-                $staffFound = $this->hrm_model->staffExist($data['staff_member']);
+                $staffFound = $this->hrm_model->staffExist($data['staff_member'],$data['salary_month']);
+                // die($staffFound);
                 if(!empty($staffFound)){
-                    set_alert('success', _l('already_exist'));
-                    redirect(admin_url('salary/salaries'));
+                    set_alert('danger', _l('already_exist'));
+                    redirect(admin_url('hrm/salary/manage'.$id));
 
                 }
 
                 $data['created_at'] = date("Y-m-d");
+                $data['current_month'] = date('m',strtotime($data['salary_month']));
+                
                 $id = $this->hrm_model->add($data);
                 if ($id) {
                     
@@ -111,9 +114,13 @@ class Salary extends AdminController
         }
         if($id){
             $data['data'] = $this->hrm_model->get($id);
+            $staffid = $data['data']->staff_member;
+            $member = $this->staff_model->get($staffid);
+            $data['salary'] = $member->salary;
+            
         }
-
-        $data['staff']  = $this->hrm_model->getStaff('', ['active' => 1]);
+        $data['month'] = $this->hrm_model->get_month();
+        $data['staff']  = $this->hrm_model->get_staff('', ['active' => 1]);
         $this->load->view('salary',$data);
     }
     // creating pdf
@@ -157,7 +164,132 @@ class Salary extends AdminController
             access_denied('hrm');
         }
         $this->hrm_model->delete($id);
-        set_alert('success', _l('Deleted Successfully', _l('salary')));
+        set_alert('danger', _l('Deleted Successfully', _l('salary')));
         redirect('hrm/salary');
+    }
+
+    public function member($id = '')
+    {
+        // var_dump('exit');
+        // exit();
+        if (!has_permission('staff', '', 'view')) {
+            access_denied('staff');
+        }
+
+        hooks()->do_action('staff_member_edit_view_profile', $id);
+
+        $this->load->model('departments_model');
+        // $this->load->model('hrm_model');
+        if ($this->input->post()) {
+            $data = $this->input->post();
+            // Don't do XSS clean here.
+            $data['email_signature'] = $this->input->post('email_signature', false);
+            $data['email_signature'] = html_entity_decode($data['email_signature']);
+
+            $data['password'] = $this->input->post('password', false);
+            if ($id == '') {
+                if (!has_permission('staff', '', 'create')) {
+                    access_denied('staff');
+                }
+                $id = $this->hrm_model->add_staff($data);
+                if ($id) {
+                    handle_staff_profile_image_upload($id);
+                    set_alert('success', _l('added_successfully', _l('staff_member')));
+                    redirect(admin_url('hrm/salary/'));
+                }
+            } else {
+                if (!$id == get_staff_user_id() && !is_admin() && !hrm_permissions('hrm', '', 'edit')) {
+                    access_denied('hrm');
+                }
+
+                handle_staff_profile_image_upload($id);
+                $response = $this->hrm_model->update_staff($data, $id);
+                if (is_array($response)) {
+                    if (isset($response['cant_remove_main_admin'])) {
+                        set_alert('warning', _l('staff_cant_remove_main_admin'));
+                    } elseif (isset($response['cant_remove_yourself_from_admin'])) {
+                        set_alert('warning', _l('staff_cant_remove_yourself_from_admin'));
+                    }
+                } elseif ($response == true) {
+                    set_alert('success', _l('updated_successfully', _l('staff_member')));
+                }
+                redirect(admin_url('hrm/salary/'));
+            }
+        }
+        if ($id == '') {
+            $title = _l('add_new', _l('staff_member_lowercase'));
+        } else {
+            if(get_staff_user_id() != $id && !is_admin()){
+                access_denied('staff');
+            }
+            $data['insurances']            = $this->hrm_model->get_insurance_form_staffid($id);
+            $data['insurance_history']            = $this->hrm_model->get_insurance_history_from_staffid($id);
+            $data['month'] = $this->hrm_model->get_month();
+
+            $data['hrm_staff']   = $this->hrm_model->get_hrm_attachments($id);
+            $recordsreceived = $this->hrm_model->get_records_received($id);
+            $payslip = $this->hrm_model->get_paysplip_bystafff($id);
+            if(isset($payslip)){
+                $data['paysplip_month'] = $payslip[0];
+                $data['paysplip_header'] = $payslip[1];
+            }
+            $data['payroll_column'] = $this->hrm_model->column_type('', 1);
+
+            $data['records_received'] = json_decode($recordsreceived->records_received, true);
+            $data['checkbox'] = [];
+            if(isset( $data['records_received'])){
+                foreach ($data['records_received'] as $value) {
+                    $data['checkbox'][$value['datakey']] = $value['value'];
+                }
+            }
+            $member = $this->staff_model->get($id);
+            if (!$member) {
+                blank_page('Staff Member Not Found', 'danger');
+            }
+            $data['member']            = $member;
+            $title                     = $member->firstname . ' ' . $member->lastname;
+            $data['staff_departments'] = $this->departments_model->get_staff_departments($member->staffid);
+
+            $ts_filter_data = [];
+            if ($this->input->get('filter')) {
+                if ($this->input->get('range') != 'period') {
+                    $ts_filter_data[$this->input->get('range')] = true;
+                } else {
+                    $ts_filter_data['period-from'] = $this->input->get('period-from');
+                    $ts_filter_data['period-to']   = $this->input->get('period-to');
+                }
+            } else {
+                $ts_filter_data['this_month'] = true;
+            }
+
+            $data['logged_time'] = $this->staff_model->get_logged_time_data($id, $ts_filter_data);
+            
+        }
+        $this->load->model('currencies_model');
+        $data['positions'] = '';
+        $data['workplace'] ='';
+        $data['base_currency'] = '';
+        $data['roles']         = $this->roles_model->get();
+        $data['user_notes']    = $this->misc_model->get_notes($id, 'staff');
+        $data['departments']   = $this->departments_model->get();;
+        $data['title']         = $title;
+
+        $data['contract_type'] = '';
+        $data['staff'] = $this->staff_model->get();
+        $data['allowance_type'] = '';
+        $data['salary_form'] = '';
+
+        $this->load->view('members', $data);
+    }
+
+    public function staff_salary()
+    {
+        $id = $this->input->post('id');
+        $member = $this->staff_model->get($id);
+        $data = $member->salary;
+        // echo "<pre>";
+        // var_dump($member->salary);
+        // die();
+        echo json_encode($data);
     }
 }

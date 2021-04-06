@@ -183,11 +183,15 @@ function numberTowords($num)
 }
 function salary_date($date)
 {
-    $salary_month = date_parse($date);
+    if(!empty($date))
+    {
+        $salary_month = date_parse($date);
+        $dateObj   = DateTime::createFromFormat('!m', $salary_month['month']);
+        $monthName = $dateObj->format('F'); // March 
+        return $monthName.','.$salary_month['year'];
+    }
+    return '';
    
-    $dateObj   = DateTime::createFromFormat('!m', date('m')-1);
-    $monthName = $dateObj->format('F'); // March
-    return $monthName.','.$salary_month['year'];
 }
 
 function salary_issue_date()
@@ -199,7 +203,7 @@ function salary_tax($tax)
     if($tax > 50000)
     {
         $salary = ($tax - 50000) * 5/100;
-        return $salary ;
+        return intval($salary) ;
     }else{
         return 'NIL';
     }
@@ -207,9 +211,50 @@ function salary_tax($tax)
 function staff_name($id){
         
     $CI = & get_instance();
-    $CI->load->model('hrm_model');
-    $staff = $CI->hrm_model->getStaff($id, ['active' => 1]);
-    return $staff->firstname.' '.$staff->lastname;
+    $CI->load->model('Hrm_model');
+    $CI->db->where('staffid', $id);
+    $staff = $CI->db->get(db_prefix() . 'staff')->result_array();
+    // echo("<PRE>");
+    // print_r($staff[0]['firstname']);
+    // exit();
+    // $staff = $CI->hrm_model->getStaff($id, ['active' => 1]);
+    return $staff[0]['firstname'].' '.$staff[0]['lastname'];
+}
+function staff_designation($id){
+        
+    $CI = & get_instance();
+    $CI->load->model('Hrm_model');
+    $CI->db->where('staffid', $id);
+    $staff = $CI->db->get(db_prefix() . 'staff')->result_array();
+    // $staff = $CI->hrm_model->getStaff($id, ['active' => 1]);
+    return $staff[0]['designation'];
+}
+function staff_account_name($id){
+        
+    $CI = & get_instance();
+    $CI->load->model('Hrm_model');
+    $CI->db->where('staffid', $id);
+    $staff = $CI->db->get(db_prefix() . 'staff')->result_array();
+    // $staff = $CI->hrm_model->getStaff($id, ['active' => 1]);
+    return $staff[0]['name_account'];
+}
+function staff_account_no($id){
+        
+    $CI = & get_instance();
+    $CI->load->model('Hrm_model');
+    $CI->db->where('staffid', $id);
+    $staff = $CI->db->get(db_prefix() . 'staff')->result_array();
+    // $staff = $CI->hrm_model->getStaff($id, ['active' => 1]);
+    return $staff[0]['account_number'];
+}
+function staff_bank_name($id){
+        
+    $CI = & get_instance();
+    $CI->db->where('staffid', $id);
+    $CI->load->model('Hrm_model');
+    $staff = $CI->db->get(db_prefix() . 'staff')->result_array();
+    // $staff = $CI->hrm_model->getStaff($id, ['active' => 1]);
+    return $staff[0]['issue_bank'];
 }
 function image_phone()
 {

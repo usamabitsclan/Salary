@@ -17,7 +17,7 @@ $pdf->Ln(5);
 
 $html = '';
 $html.='<h1 style="text-align:centre;font-weight:bold;font-size:30px;">BITSCLAN IT SOLUTIONS <br> (PRIVATE) LIMITED</h1><br>';
-$html.='<p style="text-align:centre;font-size:23px;">Pay Slip ('.salary_date($salary->created_at).')</p><br>';
+$html.='<p style="text-align:centre;font-size:23px;">Pay Slip ('.salary_date($salary->salary_month).')</p><br>';
 
 $pdf->writeHTML($html, true, 0, true, 0);
 
@@ -33,7 +33,7 @@ $tbl.='
 <table cellspacing="0" cellpadding="12" border="1">
     <tr>
         <td style="font-weight:bold;">Mr. '.staff_name($salary->staff_member).'</td>
-        <td align="centre" style="font-weight:bold;">'.$salary->designation.'</td>
+        <td align="centre" style="font-weight:bold;">'.staff_designation($salary->staff_member).'</td>
     </tr>
     <tr>
        <td style="font-weight:bold;">Description:</td>
@@ -51,7 +51,7 @@ $tbl.='
     </tr>
      <tr>
        <td>Un Paid Leave (Deduction): '.$salary->unpaid_leaves.'</td>
-       <td align="centre">'.$salary->unpaid_leaves * ($salary->basic_salary / 30) .'/-</td>
+       <td align="centre">'.intval($salary->unpaid_leaves * ($salary->basic_salary / 30)) .'/-</td>
 
     </tr>
      <tr>
@@ -70,7 +70,7 @@ $tbl.='
 
 <table cellspacing="0" cellpadding="12" border="1">
   <tr>
-    <td rowspan="3">Payment Date: '.salary_issue_date().' <br>Bank Name: '.$salary->bank_name.' <br>Bank Account Title:'.$salary->bank_account_title.' <br>Bank Account No.:'.$salary->bank_account_no.'</td>
+    <td rowspan="3">Payment Date: '.salary_issue_date().' <br>Bank Name: '.staff_bank_name($salary->staff_member).' <br>Bank Account Title:'.staff_account_name($salary->staff_member).' <br>Bank Account No.:'.staff_account_no($salary->staff_member).'</td>
     <td align="centre"><b>NET PAY</b></td>
   </tr>
 

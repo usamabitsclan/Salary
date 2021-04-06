@@ -3,43 +3,6 @@
 <div id="wrapper">
 <div class="content">
    <div class="row">
-      <?php if(isset($member)){ ?>
-      <div class="col-md-12">
-         <div class="panel_s">
-            <div class="panel-body no-padding-bottom">
-               <?php $this->load->view('admin/staff/stats'); ?>
-            </div>
-         </div>
-      </div>
-      <div class="member">
-         <?php echo form_hidden('isedit'); ?>
-         <?php echo form_hidden('memberid',$member->staffid); ?>
-      </div>
-      <?php } ?>
-      <?php if(isset($member)){ ?>
-
-      <div class="col-md-12">
-         <?php if(total_rows(db_prefix().'departments',array('email'=>$member->email)) > 0) { ?>
-            <div class="alert alert-danger">
-               The staff member email exists also as support department email, according to the docs, the support department email must be unique email in the system, you must change the staff email or the support department email in order all the features to work properly.
-            </div>
-         <?php } ?>
-         <div class="panel_s">
-            <div class="panel-body">
-              
-               <h4 class="no-margin"><?php echo htmlspecialchars($member->firstname) . ' ' . htmlspecialchars($member->lastname); ?>
-                  <?php if($member->last_activity && $member->staffid != get_staff_user_id()){ ?>
-                  <small> - <?php echo _l('last_active'); ?>:
-                        <span class="text-has-action" data-toggle="tooltip" data-title="<?php echo _dt($member->last_activity); ?>">
-                              <?php echo time_ago($member->last_activity); ?>
-                        </span>
-                     </small>
-                  <?php } ?>
-               </h4>
-            </div>
-         </div>
-      </div>
-      <?php } ?>
       <?php echo form_open_multipart($this->uri->uri_string(),array('class'=>'staff-form','autocomplete'=>'off')); ?>
       <div class="col-md-<?php if(!isset($member)){echo '8 col-md-offset-2';} else {echo '12';} ?>" id="small-table">
          <div class="panel_s">
@@ -92,48 +55,6 @@
                </ul>
                <div class="tab-content">
                   <div role="tabpanel" class="tab-pane active" id="tab_staff_profile">
-                     <?php if(total_rows(db_prefix().'emailtemplates',array('slug'=>'two-factor-authentication','active'=>0)) == 0){ ?>
-                     <div class="checkbox checkbox-primary">
-                        <input type="checkbox" value="1" name="two_factor_auth_enabled" id="two_factor_auth_enabled"<?php if(isset($member) && $member->two_factor_auth_enabled == 1){echo ' checked';} ?>>
-                        <label for="two_factor_auth_enabled"><i class="fa fa-question-circle" data-toggle="tooltip" data-title="<?php echo _l('two_factor_authentication_info'); ?>"></i>
-                        <?php echo _l('enable_two_factor_authentication'); ?></label>
-                     </div>
-                     <?php } ?>
-                     <?php if(is_admin() || hrm_permissions('hrm','', 'edit')){ ?>
-                     <div class="is-not-staff<?php if(isset($member) && $member->admin == 1){ echo ' hide'; }?>">
-                        <div class="checkbox checkbox-primary">
-                           <?php
-                              $checked = '';
-                              if(isset($member)) {
-                               if($member->is_not_staff == 1){
-                                $checked = ' checked';
-                              }
-                              }
-                              ?>
-                           <input type="checkbox" value="1" name="is_not_staff" id="is_not_staff" <?php echo htmlspecialchars($checked); ?> >
-                           <label for="is_not_staff"><?php echo _l('is_not_staff_member'); ?></label>
-                        </div>
-                        <hr />
-                     </div>
-                   <?php } ?>
-                     <?php if((isset($member) && $member->profile_image == NULL) || !isset($member)){ ?>
-                     <div class="form-group">
-                        <label for="profile_image" class="profile-image"><?php echo _l('staff_edit_profile_image'); ?></label>
-                        <input type="file" name="profile_image" class="form-control" id="profile_image">
-                     </div>
-                     <?php } ?>
-                     <?php if(isset($member) && $member->profile_image != NULL){ ?>
-                     <div class="form-group">
-                        <div class="row">
-                           <div class="col-md-9">
-                              <?php echo staff_profile_image($member->staffid,array('img','img-responsive','staff-profile-image-thumb'),'thumb'); ?>
-                           </div>
-                           <div class="col-md-3 text-right">
-                              <a href="<?php echo admin_url('staff/remove_staff_profile_image/'.$member->staffid); ?>"><i class="fa fa-remove"></i></a>
-                           </div>
-                        </div>
-                     </div>
-                     <?php } ?>
                      <div class="row">
                      <?php $value = (isset($member) ? $member->firstname : ''); ?>
                      <?php $attrs = (isset($member) ? array() : array('autofocus'=>true)); ?>
@@ -141,7 +62,14 @@
                           <?php  $hr_codes = (isset($member) ? $member->staff_identifi : ''); ?>
                           <div class="form-group" app-field-wrapper="staff_identifi">
                             <label for="staff_identifi" class="control-label"><?php echo _l('hr_code'); ?></label>
+
+                            <div class="input-group">
+                            <span class="input-group-addon">
+                               <?php echo htmlspecialchars('BC21'); ?>
+                               </span>
                             <input type="text" id="staff_identifi" name="staff_identifi" class="form-control" value="<?php echo htmlspecialchars($hr_codes); ?>" aria-invalid="false" <?php if(!is_admin() && !hrm_permissions('hrm','', 'edit')){ echo 'disabled' ; }  ?>>
+
+                               </div>
                           </div>
                          </div>   
                          <div class="col-md-4">
@@ -156,26 +84,7 @@
                         </select>
                         </div>
 
-                     </div> 
-                     <div class="row">
-                        
-                        <div class="col-md-4">
-                             <?php 
-                             $birthday = (isset($member) ? $member->birthday : ''); 
-                             echo render_date_input('birthday','birthday',_d($birthday)); ?>
-                        </div>
-                        <div class="col-md-4">
-                            <?php
-                             $birthplace = (isset($member) ? $member->birthplace : '');
-                             echo render_input('birthplace','birthplace',$birthplace,'text'); ?> 
-                        </div>
-                        <div class="col-md-4">
-                            <?php 
-                            $home_town = (isset($member) ? $member->home_town : '');
-                            echo render_input('home_town','home_town',$home_town,'text'); ?> 
-                        </div>
-                     </div>  
-                     
+                     </div>                      
                      <div class="row">
                         <div class="col-md-4">
                              <label for="marital_status" class="control-label"><?php echo _l('marital_status'); ?></label>
@@ -185,89 +94,42 @@
                            <option value="<?php echo 'married'; ?>" <?php if(isset($member) && $member->marital_status == 'married'){echo 'selected';} ?>><?php echo _l('married'); ?></option>
                         </select>
                         </div>
-
-                        <div class="col-md-4">
-                            <?php
-                             $nation = (isset($member) ? $member->nation : '');
-                             echo render_input('nation','nation',$nation,'text'); ?>
-                        </div>
                         <div class="col-md-4">
                             <?php 
                              $religion = (isset($member) ? $member->religion : '');
                             echo render_input('religion','religion',$religion,'text'); ?>
-                        </div>
-                     </div>
-                     <div class="row">
-                        <div class="col-md-4">
-                            <?php 
-                            $identification = (isset($member) ? $member->identification : '');
-                            echo render_input('identification','identification',$identification,'text'); ?>
-                        </div>
-                        <div class="col-md-4">
-                            <?php
-                            $days_for_identity = (isset($member) ? $member->days_for_identity : '');
-                            echo render_date_input('days_for_identity','days_for_identity',_d($days_for_identity)); ?>
-                        </div>
-                        <div class="col-md-4">
-                            <?php
-                            $place_of_issue = (isset($member) ? $member->place_of_issue : '');
-                            echo render_input('place_of_issue','place_of_issue',$place_of_issue, 'text'); ?>
-                        </div>
-                     </div> 
-                     <div class="row">
-                        <div class="col-md-4">
-                            <?php 
-                            $resident = (isset($member) ? $member->resident : '');
-                            echo render_input('resident','resident',$resident,'text'); ?>
                         </div>
                         <div class="col-md-4">
                             <?php 
                             $current_address = (isset($member) ? $member->current_address : '');
                             echo render_input('current_address','current_address',$current_address,'text'); ?>
                         </div>
-                        <div class="col-md-4">
-                            <?php
-                             $literacy = (isset($member) ? $member->literacy : '');
-                             echo render_input('literacy','literacy',$literacy,'text'); ?>
-                        </div>
                      </div>
                      <div class="row">
                         <div class="col-md-4">
-                            <label for="status_work" class="control-label"><?php echo _l('status_work'); ?></label>
-                        <select name="status_work" class="selectpicker" id="status_work" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>"> 
-                           <option value=""></option>                  
-                           <option value="<?php echo 'working'; ?>" <?php if(isset($member) && $member->status_work == 'working'){echo 'selected';} ?>><?php echo _l('working'); ?></option>
-                           <option value="<?php echo 'maternity_leave'; ?>" <?php if(isset($member) && $member->status_work == 'maternity_leave'){echo 'selected';} ?>><?php echo _l('maternity_leave'); ?></option>
-                           <option value="<?php echo 'inactivity'; ?>" <?php if(isset($member) && $member->status_work == 'inactivity'){echo 'selected';} ?>><?php echo _l('inactivity'); ?></option>
-                        </select>
+                           <?php $value = (isset($member) ? $member->designation : ''); ?>
+                          <?php echo render_input('designation','staff_designation',$value); ?>
                         </div>
                         <div class="col-md-4">
-                            <label for="job_position" class="control-label"><?php echo _l('job_position'); ?></label>
-                        <select name="job_position" class="selectpicker" id="job_position" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>"> 
-                           <option value=""></option> 
-                           <?php foreach($positions as $p){ ?> 
-                              <option value="<?php echo htmlspecialchars($p['position_id']); ?>" <?php if(isset($member) && $member->job_position == $p['position_id']){echo 'selected';} ?>><?php echo htmlspecialchars($p['position_name']); ?></option>
-                           <?php } ?>
-                        </select>
+                          <?php $value = (isset($member) ? $member->phonenumber : ''); ?>
+                          <?php echo render_input('phonenumber','staff_add_edit_phonenumber',$value); ?>
                         </div>
-                         <div class="col-md-4">
-                            <label for="workplace" class="control-label"><?php echo _l('workplace'); ?></label>
-                        <select name="workplace" class="selectpicker" id="workplace" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>"> 
-                           <option value=""></option>                  
-                           <?php foreach($workplace as $w){ ?>
 
-                              <option value="<?php echo htmlspecialchars($w['workplace_id']); ?>" <?php if(isset($member) && $member->workplace == $w['workplace_id']){echo 'selected';} ?>><?php echo htmlspecialchars($w['workplace_name']); ?></option>
-
-                           <?php } ?>
-                        </select>
+                      <div class="col-md-4">
+                        <?php $value = (isset($member) ? $member->email : ''); ?>
+                        <div class="form-group" app-field-wrapper="email">
+                          <label for="email" class="control-label">Email</label>
+                          <input type="email" id="email" name="email" class="form-control" autocomplete="off" value="<?php echo htmlspecialchars($value); ?>" <?php if(!is_admin() && !hrm_permissions('hrm','', 'edit')){ echo 'disabled' ;}  ?>>
                         </div>
+
+                      </div>
+
                      </div>
-                     <br> 
                      <div class="row">
                         <div class="col-md-4">
                             <?php
                             $account_number = (isset($member) ? $member->account_number : '');
-                            echo render_input('account_number','account_number',$account_number, 'text'); ?>
+                            echo render_input('account_number','bank_account_number',$account_number, 'text'); ?>
                         </div>
                         <div class="col-md-4">
                             <?php
@@ -277,34 +139,10 @@
                         <div class="col-md-4">
                             <?php
                             $issue_bank = (isset($member) ? $member->issue_bank : '');
-                            echo render_input('issue_bank','issue_bank',$issue_bank, 'text'); ?>
+                            echo render_input('issue_bank','bank_name',$issue_bank, 'text'); ?>
                         </div>
                      </div>
-                     <br>
-                     <div class="row">
-                       <div class="col-md-4">
-                            <?php
-                            $Personal_tax_code = (isset($member) ? $member->Personal_tax_code : '');
-                            echo render_input('Personal_tax_code','Personal_tax_code',$Personal_tax_code, 'text'); ?>
-                        </div>
-                        <div class="col-md-4">
-                          <div class="form-group">
-                            <label for="hourly_rate"><?php echo _l('staff_hourly_rate'); ?></label>
-                            <div class="input-group">
-                               <input type="number" name="hourly_rate" value="<?php if(isset($member)){echo htmlspecialchars($member->hourly_rate);} else {echo 0;} ?>" id="hourly_rate" class="form-control">
-                               <span class="input-group-addon">
-                               <?php echo htmlspecialchars($base_currency->symbol); ?>
-                               </span>
-                            </div>
-                         </div>
-                        </div>
 
-                        <div class="col-md-4">
-                          <?php $value = (isset($member) ? $member->phonenumber : ''); ?>
-                          <?php echo render_input('phonenumber','staff_add_edit_phonenumber',$value); ?>
-                        </div>
-                     </div>
-                     
                      <div class="row">
                       <div class="col-md-4">
                        <div class="form-group">
@@ -326,109 +164,16 @@
                        </div>
                      </div>
                      <div class="row">
-                      <div class="col-md-4">
-                        <?php $value = (isset($member) ? $member->email : ''); ?>
-                        <div class="form-group" app-field-wrapper="email">
-                          <label for="email" class="control-label">Email</label>
-                          <input type="email" id="email" name="email" class="form-control" autocomplete="off" value="<?php echo htmlspecialchars($value); ?>" <?php if(!is_admin() && !hrm_permissions('hrm','', 'edit')){ echo 'disabled' ;}  ?>>
-                        </div>
-
-                      </div>
-                       <div class="col-md-4">
-                     <?php if(get_option('disable_language') == 0){ ?>
-                     <div class="form-group select-placeholder">
-                        <label for="default_language" class="control-label"><?php echo _l('localization_default_language'); ?></label>
-                        <select name="default_language" data-live-search="true" id="default_language" class="form-control selectpicker" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
-                           <option value=""><?php echo _l('system_default_string'); ?></option>
-                           <?php foreach($this->app->get_available_languages() as $availableLanguage){
-                              $selected = '';
-                              if(isset($member)){
-                               if($member->default_language == $availableLanguage){
-                                $selected = 'selected';
-                              }
-                              }
-                              ?>
-                           <option value="<?php echo htmlspecialchars($availableLanguage); ?>" <?php echo htmlspecialchars($selected); ?>><?php echo ucfirst($availableLanguage); ?></option>
-                           <?php } ?>
-                        </select>
-                     </div>
-                     <?php } ?>
-                         
-                       </div>
-                       <div class="col-md-4">
-                         
-                     <div class="form-group select-placeholder">
-                        <label for="direction"><?php echo _l('document_direction'); ?></label>
-                        <select class="selectpicker" data-none-selected-text="<?php echo _l('system_default_string'); ?>" data-width="100%" name="direction" id="direction">
-                           <option value="" <?php if(isset($member) && empty($member->direction)){echo 'selected';} ?>></option>
-                           <option value="ltr" <?php if(isset($member) && $member->direction == 'ltr'){echo 'selected';} ?>>LTR</option>
-                           <option value="rtl" <?php if(isset($member) && $member->direction == 'rtl'){echo 'selected';} ?>>RTL</option>
-                        </select>
-                     </div>
-                       </div>
-                     </div>
-                     <div class="row">
-                       <div class="col-md-6">
-                       <i class="fa fa-question-circle pull-left" data-toggle="tooltip" data-title="<?php echo _l('staff_email_signature_help'); ?>"></i>
-                       <?php $value = (isset($member) ? $member->email_signature : ''); ?>
-                       <?php echo render_textarea('email_signature','settings_email_signature',$value, ['data-entities-encode'=>'true']); ?>
-                       </div>
-                       <div class="col-md-6">
+                      <div class="col-md-12">
                          <?php
-                       $orther_infor = (isset($member) ? $member->orther_infor : '');
-                       echo render_textarea('orther_infor','orther_infor',$orther_infor); ?>
-                       </div>
+                            $basic_salary = (isset($member) ? $member->salary : '');
+                            echo render_input('salary','basic_salary',$basic_salary, 'number'); ?>
+                      </div>
                      </div>
-                     <?php if(is_admin() || hrm_permissions('hrm','', 'edit')){ ?>
-                     <div class="form-group">
-                        <?php if(count($departments) > 0){ ?>
-                        <label for="departments"><?php echo _l('staff_add_edit_departments'); ?></label>
-                        <?php } ?>
-                        <?php foreach($departments as $department){ ?>
-                        <div class="checkbox checkbox-primary">
-                           <?php
-                              $checked = '';
-                              if(isset($member)){
-                               foreach ($staff_departments as $staff_department) {
-                                if($staff_department['departmentid'] == $department['departmentid']){
-                                 $checked = ' checked';
-                               }
-                              }
-                              }
-                              ?>
-                           <input type="checkbox" id="dep_<?php echo htmlspecialchars($department['departmentid']); ?>" name="departments[]" value="<?php echo htmlspecialchars($department['departmentid']); ?>"<?php echo htmlspecialchars($checked); ?>>
-                           <label for="dep_<?php echo htmlspecialchars($department['departmentid']); ?>"><?php echo htmlspecialchars($department['name']); ?></label>
-                        </div>
-                        <?php } ?>
-                     </div>
-                   <?php } ?>
-
                      <?php $rel_id = (isset($member) ? $member->staffid : false); ?>
                      <?php echo render_custom_fields('staff',$rel_id); ?>
 
-                     <div class="row">
-                        <div class="col-md-12">
-                           <hr class="hr-10" />
-                           <?php if (is_admin()){ ?>
-                           <div class="checkbox checkbox-primary">
-                              <?php
-                                 $isadmin = '';
-                                 if(isset($member) && ($member->staffid == get_staff_user_id() || is_admin($member->staffid))) {
-                                   $isadmin = ' checked';
-                                 }
-                              ?>
-                              <input type="checkbox" name="administrator" id="administrator" <?php echo htmlspecialchars($isadmin); ?>>
-                              <label for="administrator"><?php echo _l('staff_add_edit_administrator'); ?></label>
-                           </div>
-                            <?php } ?>
-                            <?php if(!isset($member) && total_rows(db_prefix().'emailtemplates',array('slug'=>'new-staff-created','active'=>0)) === 0){ ?>
-                              <div class="checkbox checkbox-primary">
-                                 <input type="checkbox" name="send_welcome_email" id="send_welcome_email" checked>
-                                 <label for="send_welcome_email"><?php echo _l('staff_send_welcome_email'); ?></label>
-                              </div>
-                           <?php } ?>
-                        </div>
-                     </div>
+
                      <?php if(!isset($member) || is_admin() || !is_admin() && $member->admin == 0) { ?>
                      <!-- fake fields are a workaround for chrome autofill getting the wrong fields -->
                      <input  type="text" class="fake-autofill-field" name="fakeusernameremembered" value='' tabindex="-1"/>
@@ -740,6 +485,7 @@
            firstname: 'required',
            lastname: 'required',
            username: 'required',
+           designation: 'required',
            password: {
                required: {
                    depends: function(element) {

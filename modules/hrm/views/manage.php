@@ -10,6 +10,8 @@
                             <?php if (has_permission('hrm','','create')) { ?>
                                 <a href="<?php echo admin_url('hrm/salary/manage'); ?>" class="btn btn-info mright5 test pull-left display-block">
                                     <?php echo _l('add_salary'); ?></a>
+                            <a href="<?php echo admin_url('hrm/salary/member'); ?>" class="btn mright5 btn-info pull-left display-block hidden-xs"><?php echo _l('new_staff'); ?></a>
+
                             <?php } ?>
 
                             <div class="visible-xs">
@@ -73,9 +75,13 @@
                                 'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-delivery-date')
                             ),
                             array(
-                                'name'=>_l('created_at'),
-                                'th_attrs'=>array('class'=>'toggleable sorting_asc', 'id'=>'th-account',)
+                                'name'=>_l('salary_generated'),
+                                'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-salary-date')
                             ),
+                            // array(
+                            //     'name'=>_l('created_at'),
+                            //     'th_attrs'=>array('class'=>'toggleable sorting_asc', 'id'=>'th-account')
+                            // ),
                         );
                         foreach($_table_data as $_t){
                             array_push($table_data,$_t);

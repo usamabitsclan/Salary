@@ -15,7 +15,8 @@ $aColumns = [
     'unpaid_leaves',
     'bonus',
     'total_salary',
-    'created_at',
+    'salary_month',
+    // 'created_at',
 ];
 
 $sIndexColumn = 'id';
@@ -68,7 +69,8 @@ foreach ($rResult as $aRow) {
     $row[] = $aRow['unpaid_leaves'];
     $row[] = $aRow['bonus'];
     $row[] = $aRow['total_salary'];
-    $row[] = $aRow['created_at'];
+    $row[] = $aRow['salary_month'];
+    // $row[] = $aRow['created_at'];
 
     $output['aaData'][] = $row;
 }
